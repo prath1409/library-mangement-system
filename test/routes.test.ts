@@ -19,7 +19,7 @@ app.use('/', router);
 //   afterA(async () => {
 //     await pool.end()
 //     jest.resetAllMocks();
-//   })
+//})
 
 describe('POST /register', ()=>{
     // curl for loop for load testting
