@@ -5,11 +5,12 @@ import bcryptjs from 'bcryptjs';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { IGetUserAuthInfoRequest, User, Users, jwtUser } from "../serviceTypes";
-import { RES_STATUS, logQueries } from '../constants';
+import { RES_STATUS } from '../constants';
+import { logQueries } from '../database/dbQueries';
 import { databaseQuery } from '../database/db_queryFunction';
-import { resolve } from 'path';
+import { } from 'path';
 import { rejects } from 'assert';
-import {QueryResult} from 'pg'
+import { QueryResult } from 'pg'
 
 /**
  * This function is a helper function for registeration of user and returns user object from database.
@@ -17,27 +18,27 @@ import {QueryResult} from 'pg'
  * @returns {Users} Users is an object.   
 */
 export const userRegistration = async (body: Request["body"]): Promise<Users> => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const validate: Users | null = registrationValidator(body);
-            if (validate)
-                return resolve(validate);
-            let regexp = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-            if(!regexp.test(body.email))
-                return resolve({ status: RES_STATUS.BADREQUEST, message: "Email Id invalid" });
-            const user: QueryResult = await databaseQuery(logQueries.Register.user, [body.email]);
-            if (user.rowCount)
-                return resolve({ status: RES_STATUS.BADREQUEST, message: 'User already exits' });
-            const hashedPassword: string = await bcryptjs.hash(body.password, 10);
-            const userId: string = uuidv4();
-            await databaseQuery(logQueries.Register.adduser, [userId, body.role.toLowerCase(), body.name, body.email, hashedPassword, userId,  userId]);
-            //const ans: QueryResult = await databaseQuery(logQueries.Register.addeduser, [body.email])
-            return resolve({ status: RES_STATUS.SUCCESS, message: 'User Registered Successfully'});
-        }
-        catch (err) {
-            return reject(err);
-        }
-    });
+
+    try {
+        const validate: Users | null = registrationValidator(body);
+        if (validate)
+            return (validate);
+        let regexp = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+        if (!regexp.test(body.email))
+            return ({ status: RES_STATUS.BADREQUEST, message: "Email Id invalid" });
+        const user: QueryResult = await databaseQuery(logQueries.Register.user, [body.email]);
+        if (user.rowCount)
+            return ({ status: RES_STATUS.BADREQUEST, message: 'User already exits' });
+        const hashedPassword: string = await bcryptjs.hash(body.password, 10);
+        const userId: string = uuidv4();
+        await databaseQuery(logQueries.Register.adduser, [userId, body.role.toLowerCase(), body.name, body.email, hashedPassword, userId, userId]);
+        //const ans: QueryResult = await databaseQuery(logQueries.Register.addeduser, [body.email])
+        return ({ status: RES_STATUS.SUCCESS, message: 'User Registered Successfully' });
+    }
+    catch (err) {
+        throw err;
+    }
+
 }
 
 /**
@@ -48,27 +49,27 @@ export const userRegistration = async (body: Request["body"]): Promise<Users> =>
  * @returns {Users} Users is an object.
 */
 export const userLogin = async (username: string, password: string, numberParams: number): Promise<Users> => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const validate: Users | null = loginValidator(username, password, numberParams);
-            if (validate)
-                return resolve(validate);
-            let passCode: QueryResult = await databaseQuery(logQueries.login.passcode, [username]);
-            if (!passCode.rowCount)
-                return resolve({ status: RES_STATUS.NOTFOUND, message: 'User not exists' });
-            const passKey = passCode.rows[0];
-            if (await bcryptjs.compare(password, passKey.passcode)) {
-                const user: User = { id: passKey.id, email: username, role: passKey.role };
-                const accessToken: string = jwt.sign(user, String(process.env.SECRET_TOKEN), { expiresIn: "12000s" });
-                return resolve({ status: RES_STATUS.SUCCESS, user: { accessToken: accessToken } });
-            }
-            else
-                return resolve({ status: RES_STATUS.UNATHURIZED, message: 'Invalid Password' });
+
+    try {
+        const validate: Users | null = loginValidator(username, password, numberParams);
+        if (validate)
+            return (validate);
+        let passCode: QueryResult = await databaseQuery(logQueries.login.passcode, [username]);
+        if (!passCode.rowCount)
+            return ({ status: RES_STATUS.NOTFOUND, message: 'User not exists' });
+        const passKey = passCode.rows[0];
+        if (await bcryptjs.compare(password, passKey.passcode)) {
+            const user: User = { id: passKey.id, email: username, role: passKey.role };
+            const accessToken: string = jwt.sign(user, String(process.env.SECRET_TOKEN), { expiresIn: "12000s" });
+            return ({ status: RES_STATUS.SUCCESS, user: { accessToken: accessToken } });
         }
-        catch (err) {
-            return reject(err);
-        }
-    });
+        else
+            return ({ status: RES_STATUS.UN_ATHURIZED, message: 'Invalid Password' });
+    }
+    catch (err) {
+        throw err;
+    }
+
 }
 
 
@@ -83,10 +84,10 @@ export const userLogin = async (username: string, password: string, numberParams
 export function authenticateToken(req: IGetUserAuthInfoRequest, res: Response, next: NextFunction): Response<any, Record<string, any>> | undefined {
     const token: string | undefined = req.headers.authorization?.split(' ')[1];
     if (!token)
-        return res.status(RES_STATUS.UNATHURIZED).json({ message: 'Requires Token or authentication' });
+        return res.status(RES_STATUS.UN_ATHURIZED).json({ message: 'Requires Token or authentication' });
     jwt.verify(token, String(process.env.SECRET_TOKEN), (err: unknown, user: any) => {
         if (err)
-            return res.status(RES_STATUS.UNATHURIZED).json({ message: 'Invalid Token' });
+            return res.status(RES_STATUS.UN_ATHURIZED).json({ message: 'Invalid Token' });
         req.user = user;
         next();
     });
@@ -106,8 +107,8 @@ export function authenticateToken(req: IGetUserAuthInfoRequest, res: Response, n
  * @param {Request["body"]} body is req.body which is an object or undefined.  
  * @returns {Users | null} Users is an object.   
 */
-export function registrationValidator(body: Request["body"]): Users | null{
-    if(Object.values(body).length == 0)
+export function registrationValidator(body: Request["body"]): Users | null {
+    if (Object.values(body).length == 0)
         return { status: RES_STATUS.BADREQUEST, message: "Four parameters required" };
     else if (!body.role)
         return { status: RES_STATUS.BADREQUEST, message: "Role required" };
@@ -137,7 +138,7 @@ export function registrationValidator(body: Request["body"]): Users | null{
  * @returns {Users | null} Users is an object.   
 */
 export function loginValidator(username: string, password: string, numberParams: number): Users | null {
-    if(numberParams == 0)
+    if (numberParams == 0)
         return { status: RES_STATUS.BADREQUEST, message: "Two parameters required" };
     else if (!username)
         return { status: RES_STATUS.BADREQUEST, message: "Username required" };
