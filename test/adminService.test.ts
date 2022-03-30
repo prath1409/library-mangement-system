@@ -19,8 +19,7 @@ test('addBook function', async () =>{
         role: 'admin'
     }
     const data = await addBook(body,reqUser);
-    expect(data.status).toBeDefined();
-    //expect(data.message).toEqual('Forbidden not allowed');
+    expect(data.status).toBe(200);
     expect(data.book?.name).toEqual('DSA by Gheware');
 });
 
@@ -33,7 +32,7 @@ test('getStudents function', async () =>{
         role: 'admin'
     }
     const data = await getStudents(id,reqUser);
-    expect(data.status).toBeDefined();
+    expect(data.status).toBe(400);
     expect(data.message).toEqual('Book not exists');
 });
 

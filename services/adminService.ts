@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Response, Request } from 'express';
 import { IGetUserAuthInfoRequest, Books, User, Users } from "../serviceTypes"
-import { RES_STATUS } from '../constants';
+import { RES_STATUS, regexp } from '../constants';
 import { adminQueries } from '../database/dbQueries';
 import { databaseQuery } from '../database/db_queryFunction';
 import { QueryResult } from 'pg'
@@ -21,7 +21,6 @@ export const addBook = async (body: Request["body"], reqUser: User): Promise<Boo
         if (validate)// validateBook
             return (validate);
         const librarianId: string | undefined = reqUser.id
-        let regexp = /[a-z0-9]+/gi;
         let entry: string[] | null = body.name.match(regexp);
         let bookName = entry?.join(' ');
         bookName?.toString();
@@ -55,19 +54,18 @@ export const addBook = async (body: Request["body"], reqUser: User): Promise<Boo
 export const getStudents = async (bookName: string, reqUser: User): Promise<Users> => {
     try {
         if (reqUser.role != 'admin')
-            return ({ status: RES_STATUS.NOT_ATHURIZED, message: 'Forbidden not allowed' });
+            return ({ status: RES_STATUS.FORBIDDEN, message: 'Forbidden not allowed' });
         if (!bookName)
-            return ({ status: RES_STATUS.BADREQUEST, message: 'Book id required' });
-        let regexp = /[a-z0-9]+/gi;
+            return ({ status: RES_STATUS.BAD_REQUEST, message: 'Book id required' });
         let entry: string[] | null = bookName.match(regexp);
         let book_name = entry?.join(' ');
         const book: QueryResult = await databaseQuery(adminQueries.StudentData.book, [book_name]);
         if (!book.rowCount)
-            return ({ status: RES_STATUS.NOTFOUND, message: 'Book not exists' });
+            return ({ status: RES_STATUS.NOT_FOUND, message: 'Book not exists' });
         const bookId: string = book.rows[0].id
         const ans: QueryResult = await databaseQuery(adminQueries.StudentData.students, [bookId]);
         if (!ans.rowCount)
-            return ({ status: RES_STATUS.NOTFOUND, message: 'Book is not issued' })
+            return ({ status: RES_STATUS.NOT_FOUND, message: 'Book is not issued' })
         return ({ status: RES_STATUS.SUCCESS, users: ans.rows });
     }
     catch (err) {
@@ -87,29 +85,22 @@ export const getIssuedBooks = async (userName: string, reqUser: User): Promise<U
 
     try {
         if (reqUser.role != 'admin')
-            return ({ status: RES_STATUS.NOT_ATHURIZED, message: 'Forbidden not allowed' });
+            return ({ status: RES_STATUS.FORBIDDEN, message: 'Forbidden not allowed' });
         if (!userName)
-            return ({ status: RES_STATUS.BADREQUEST, message: 'Username required' });
+            return ({ status: RES_STATUS.BAD_REQUEST, message: 'Username required' });
         const user: QueryResult = await databaseQuery(adminQueries.issuedBooksByUserId.user, [userName]);
         if (!user.rowCount)
-            return ({ status: RES_STATUS.NOTFOUND, message: 'User not exists' });
+            return ({ status: RES_STATUS.NOT_FOUND, message: 'User not exists' });
         const userId: string = user.rows[0].id;
         const ans: QueryResult = await databaseQuery(adminQueries.issuedBooksByUserId.books, [userId]);
         if (!ans.rowCount)
-            return ({ status: RES_STATUS.NOTFOUND, message: 'User has not issued anything' })
+            return ({ status: RES_STATUS.NOT_FOUND, message: 'User has not issued anything' })
         return ({ status: RES_STATUS.SUCCESS, users: ans.rows });
     }
     catch (err) {
         throw err;
     }
 }
-
-
-
-
-
-
-
 
 
 /**
@@ -121,92 +112,13 @@ export const getIssuedBooks = async (userName: string, reqUser: User): Promise<U
 */
 export function bookValidator(body: Request["body"], reqUser: User): Books | null {
     if (reqUser.role != 'admin')
-        return { status: RES_STATUS.UN_ATHURIZED, message: 'Forbidden not allowed' };
+        return { status: RES_STATUS.FORBIDDEN, message: 'Forbidden not allowed' };
     else if (!body.name)
-        return { status: RES_STATUS.BADREQUEST, message: "Name required" };
+        return { status: RES_STATUS.BAD_REQUEST, message: "Name required" };
     else if (!body.available_count)
-        return { status: RES_STATUS.BADREQUEST, message: "Available_count required" };
+        return { status: RES_STATUS.BAD_REQUEST, message: "Available_count required" };
     else if (Object.values(body).length != 2)
-        return { status: RES_STATUS.BADREQUEST, message: "Two parameters required" };
+        return { status: RES_STATUS.BAD_REQUEST, message: "Two parameters required" };
     else
         return null;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// /**
-//  * This function is to remove book from db by librarian i.e admin
-//  * and returns Books object.
-//  * @param {string} bookId is a books id of type string
-//  * @param {User} reqUser is req.user which is an object of type User.
-//  * @returns {Promise<Books>} Books is an object.
-// */
-// export const removeBook = async (bookId: string, reqUser: User): Promise<Books>=>{
-//     return new Promise(async  , reject) => {
-//         try {
-//             if(reqUser.role != 'admin')
-//                 return ({status : RES_STATUS.ATHURIZED, message: 'Forbidden not allowed'});
-//             if(!bookId)
-//                 return ({status: RES_STATUS.BADREQUEST, message: 'Book id required'});
-//             const check = await databaseQuery(adminQueries.removeBook.book, [bookId]);
-//             if(!check.rowCount)
-//                 return ({status: RES_STATUS.NOTFOUND, message: 'Book not exists '});
-//             if(check.rows[0].issued_count > 0)
-//                 return ({status: RES_STATUS.BADREQUEST, message: 'Cannot delete because book is issued'});
-//             await databaseQuery(adminQueries.removeBook.deleteBook, [bookId]);
-//             //const ans = check.rows[0];
-//             const ans = (({ id, name, available_count }) => ({ id, name, available_count}))(check.rows[0])
-//             return ({status: RES_STATUS.SUCCESS,  book: ans});
-//         }
-//         catch (err) {
-//             return reject(err);
-//         }
-//     });
-// }

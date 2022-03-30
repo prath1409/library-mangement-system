@@ -1,10 +1,11 @@
 import { type } from "os"
 type status = {
     SUCCESS: number,
-    BADREQUEST: number,
-    UN_ATHURIZED: number,
-    NOT_ATHURIZED: number,
-    NOTFOUND: number
+    BAD_REQUEST: number,
+    NOT_AUTHORIZED: number,
+    FORBIDDEN: number,
+    NOT_FOUND: number,
+    SERVER_ERROR: number
 }
 
 interface addBook {
@@ -13,11 +14,11 @@ interface addBook {
     book: string;
 }
 
-interface availBook  {
+interface availBook {
     availBooks: string;
 }
 
-interface raiseBook  {
+interface raiseBook {
     user: string;
     user_mapped: string;
     get_available: string;
@@ -26,160 +27,19 @@ interface raiseBook  {
     issued_books: string;
 }
 
-interface userqueries {
+interface userQueries {
     [key: string]: addBook | availBook | raiseBook;
-  }
-
-  export const RES_STATUS: status = {
-    SUCCESS: 200,
-    BADREQUEST: 400,
-    UN_ATHURIZED: 401,
-    NOT_ATHURIZED: 403,
-    NOTFOUND: 404
 }
-/**
- * This functions returns all the Shipments/Loads for
- * BluJay client for given offset Value.
- * @param {Logger} log
- * @param {AxiosRequestHeaders} headers
- * @param {ClientConfig} clientConfig
- * @param {number} offsetValue - offset for pagination
- * @returns {Promise<Loads[]>}
- */
 
+export const RES_STATUS: status = {
+    SUCCESS: 200,
+    BAD_REQUEST: 400,
+    NOT_AUTHORIZED: 401,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+    SERVER_ERROR: 500
+}
 
+export const regexp = /[a-z0-9]+/gi;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//  "/removeBook/{bookId}": {
-//     "delete": {
-//         "security": [
-//             {
-//                 "bearerAuth": []
-//             }
-//         ],
-//         "tags": [
-//             "Library Management API"
-//         ],
-//         "summary": "Returning the book",
-//         "parameters": [
-//             {
-//                 "in": "path",
-//                 "name": "bookId",
-//                 "required": true,
-//                 "schema": {
-//                     "type": "string",
-//                     "required": true,
-//                     "decription": "The book id"
-//                 }
-//             }
-//         ],
-//         "responses": {
-//             "200": {
-//                 "description": "Sucessful return of book",
-//                 "content": {
-//                     "application/json": {
-//                         "schema": {
-//                             "$ref": "#/components/schemas/ResponseBody_ReturnBook"
-//                         }
-//                     }
-//                 }
-//             },
-//             "400": {
-//                 "description": "Bad Request",
-//                 "content": {
-//                     "application/json": {
-//                         "schema": {
-//                             "$ref": "#/components/schemas/ResponseBody_Message"
-//                         }
-//                     }
-//                 }
-//             },
-//             "401": {
-//                 "description": "Invalid Authorization",
-//                 "content": {
-//                     "application/json": {
-//                         "schema": {
-//                             "$ref": "#/components/schemas/ResponseBody_Message"
-//                         }
-//                     }
-//                 }
-//             },
-//             "403": {
-//                 "description": "Forbidden",
-//                 "content": {
-//                     "application/json": {
-//                         "schema": {
-//                             "$ref": "#/components/schemas/ResponseBody_Message"
-//                         }
-//                     }
-//                 }
-//             },
-//             "404": {
-//                 "description": "Not Found",
-//                 "content": {
-//                     "application/json": {
-//                         "schema": {
-//                             "$ref": "#/components/schemas/ResponseBody_Message"
-//                         }
-//                     }
-//                 }
-//             },
-//             "500": {
-//                 "description": "Internal server error",
-//                 "content": {
-//                     "application/json": {
-//                         "schema": {
-//                             "$ref": "#/components/schemas/ResponseBody_Message"
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+export const regexpLogger = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;

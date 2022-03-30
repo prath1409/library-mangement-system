@@ -1,6 +1,3 @@
-  
-
-
 export const userQueries = {
     'AvailBooks': {
         availBooks: 'SELECT name, available_count FROM books WHERE available_count > 0'
@@ -15,11 +12,11 @@ export const userQueries = {
         issued_book: `SELECT name FROM books WHERE ID = $1`,
         issued_books: `SELECT id, name FROM books WHERE id IN (SELECT book_id FROM user_book_maping WHERE user_id = $1)`
     },
-    'IssuedBooks':{
+    'IssuedBooks': {
         user: `SELECT id FROM users WHERE email = $1`,
         books: `SELECT name FROM books WHERE id in (SELECT book_id FROM user_book_maping WHERE user_id = $1)`
     },
-    'ReturnBook':{
+    'ReturnBook': {
         available: `SELECT issued_count FROM books WHERE id = $1 AND issued_count > 0`,
         issued: `SELECT id, name FROM books WHERE id IN (SELECT book_id FROM user_book_maping WHERE user_id = $1 AND book_id =$2)`,
         delete: `DELETE FROM user_book_maping WHERE book_id = $1 AND user_id = $2`,
@@ -31,14 +28,14 @@ export const userQueries = {
 }
 
 export const adminQueries = {
-    'AddBooks' : {
+    'AddBooks': {
         lib_id: `SELECT id FROM users WHERE email = $1`,
         book_name: `SELECT id, name FROM books WHERE name ilike $1`,
         updateBook: `UPDATE books SET available_count = available_count + $1, updated_by = $2 WHERE id = $3`,
         addBook: `INSERT INTO books (id, name, available_count, created_by, updated_by) VALUES ($1, $2, $3, $4, $5)`,
         book: `SELECT name, available_count, issued_count FROM books WHERE id = $1`,
-    }, 
-    'allBooks':{
+    },
+    'allBooks': {
         books: `SELECT name, available_count FROM books`
     },
     'StudentData': {
@@ -48,16 +45,17 @@ export const adminQueries = {
     'issuedBooks': {
         books: `SELECT name FROM books WHERE issued_count > 0`
     },
-    'removeBook':{
+    'removeBook': {
         book: `SELECT id, name, available_count, issued_count FROM books WHERE id = $1`,
         deleteBook: `DELETE FROM books WHERE id = $1`,
         books: `SELECT id, name, available_count FROM books`
     },
-    'issuedBooksByUserId':{
+    'issuedBooksByUserId': {
         user: `SELECT id FROM users WHERE email = $1`,
         books: `SELECT name FROM books WHERE id IN (SELECT book_id FROM user_book_maping WHERE user_id = $1)`,
     }
 }
+
 export const logQueries = {
     'Register': {
         user: `SELECT email FROM users WHERE Email = $1`,

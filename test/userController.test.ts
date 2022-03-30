@@ -13,9 +13,4 @@ test('registerUser function exists', ()=>{
     expect(getIssuedBooks).toBeDefined();
     expect(returnIssuedBook).toBeDefined();
     expect(getStudentData).toBeDefined();
-})
-
-// // Regex
-// test('There is no I in team', ()=>{
-//     expect('team').not.toMatch(/I/i);
-// })
+});

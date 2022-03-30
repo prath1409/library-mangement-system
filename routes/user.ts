@@ -7,10 +7,6 @@ const services = require('../Services/logservice');
 const router = express.Router();
 
 
-// router.get('/simple', (req :Request, res: Response)=>{
-//     res.send('Hello');
-// })
-
 router.post('/register', controller.registerUser);
 
 router.post('/login', controller.userLogger);
@@ -29,69 +25,4 @@ router.get('/getStudentsByBookName/:id', services.authenticateToken, controller.
 
 router.get('/getBooksByUserName/:id', services.authenticateToken, controller.getBooksData);
 
-module.exports = router;
-
 export default router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// router.delete('/removeBook/:id', services.authenticateToken, controller.deleteBook);

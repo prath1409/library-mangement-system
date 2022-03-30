@@ -30,7 +30,6 @@ test('requestBook function', async () =>{
     }
     const mock= jest.fn().mockResolvedValue('Book Id invalid');
     const data = await requestBook(id, params, reqUser);
-    //data.message = mock
     expect(data.status).toBeDefined();
     expect(data.message).toEqual('Book Id invalid');
 });
@@ -57,5 +56,3 @@ test('returnBook function', async () =>{
     const data = await returnBook(id, reqUser);
     expect(data.status).toBe(403);
 });
-
-

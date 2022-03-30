@@ -79,10 +79,3 @@ test('get Books route', async () => {
   const res = await adminServices.getStudents('The monk who sold ferrari', user);
   expect(res.users).toEqual(responseData);
 });
-
-
-
-
-
-//jest.mock('../database/db');
-//jest.fn('../services/userService')
