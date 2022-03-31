@@ -18,8 +18,9 @@ export const addBook = async (body: Request["body"], reqUser: User): Promise<Boo
     try {
 
         const validate: Books | null = bookValidator(body, reqUser);
-        if (validate)// validateBook
+        if (validate) {// validateBook
             return (validate);
+        }
         const librarianId: string | undefined = reqUser.id
         let entry: string[] | null = body.name.match(regexp);
         let bookName = entry?.join(' ');
@@ -53,19 +54,23 @@ export const addBook = async (body: Request["body"], reqUser: User): Promise<Boo
 */
 export const getStudents = async (bookName: string, reqUser: User): Promise<Users> => {
     try {
-        if (reqUser.role != 'admin')
+        if (reqUser.role != 'admin') {
             return ({ status: RES_STATUS.FORBIDDEN, message: 'Forbidden not allowed' });
-        if (!bookName)
+        }
+        if (!bookName) {
             return ({ status: RES_STATUS.BAD_REQUEST, message: 'Book id required' });
+        }
         let entry: string[] | null = bookName.match(regexp);
         let book_name = entry?.join(' ');
         const book: QueryResult = await databaseQuery(adminQueries.StudentData.book, [book_name]);
-        if (!book.rowCount)
+        if (!book.rowCount) {
             return ({ status: RES_STATUS.NOT_FOUND, message: 'Book not exists' });
+        }
         const bookId: string = book.rows[0].id
         const ans: QueryResult = await databaseQuery(adminQueries.StudentData.students, [bookId]);
-        if (!ans.rowCount)
+        if (!ans.rowCount) {
             return ({ status: RES_STATUS.NOT_FOUND, message: 'Book is not issued' })
+        }
         return ({ status: RES_STATUS.SUCCESS, users: ans.rows });
     }
     catch (err) {
@@ -84,17 +89,21 @@ export const getStudents = async (bookName: string, reqUser: User): Promise<User
 export const getIssuedBooks = async (userName: string, reqUser: User): Promise<Users> => {
 
     try {
-        if (reqUser.role != 'admin')
+        if (reqUser.role != 'admin') {
             return ({ status: RES_STATUS.FORBIDDEN, message: 'Forbidden not allowed' });
-        if (!userName)
+        }
+        if (!userName) {
             return ({ status: RES_STATUS.BAD_REQUEST, message: 'Username required' });
+        }
         const user: QueryResult = await databaseQuery(adminQueries.issuedBooksByUserId.user, [userName]);
-        if (!user.rowCount)
+        if (!user.rowCount) {
             return ({ status: RES_STATUS.NOT_FOUND, message: 'User not exists' });
+        }
         const userId: string = user.rows[0].id;
         const ans: QueryResult = await databaseQuery(adminQueries.issuedBooksByUserId.books, [userId]);
-        if (!ans.rowCount)
+        if (!ans.rowCount) {
             return ({ status: RES_STATUS.NOT_FOUND, message: 'User has not issued anything' })
+        }
         return ({ status: RES_STATUS.SUCCESS, users: ans.rows });
     }
     catch (err) {

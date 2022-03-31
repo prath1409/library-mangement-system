@@ -21,13 +21,16 @@ export const userRegistration = async (body: Request["body"]): Promise<Users> =>
 
     try {
         const validate: Users | null = registrationValidator(body);
-        if (validate)
+        if (validate) {
             return (validate);
-        if (!regexpLogger.test(body.email))
+        }
+        if (!regexpLogger.test(body.email)) {
             return ({ status: RES_STATUS.BAD_REQUEST, message: "Email Id invalid" });
+        }
         const user: QueryResult = await databaseQuery(logQueries.Register.user, [body.email]);
-        if (user.rowCount)
+        if (user.rowCount) {
             return ({ status: RES_STATUS.BAD_REQUEST, message: 'User already exits' });
+        }
         const hashedPassword: string = await bcryptjs.hash(body.password, 10);
         const userId: string = uuidv4();
         await databaseQuery(logQueries.Register.adduser, [userId, body.role.toLowerCase(), body.name, body.email, hashedPassword, userId, userId]);
@@ -50,19 +53,22 @@ export const userLogin = async (username: string, password: string, numberParams
 
     try {
         const validate: Users | null = loginValidator(username, password, numberParams);
-        if (validate)
+        if (validate) {
             return (validate);
+        }
         let passCode: QueryResult = await databaseQuery(logQueries.login.passcode, [username]);
-        if (!passCode.rowCount)
+        if (!passCode.rowCount) {
             return ({ status: RES_STATUS.NOT_FOUND, message: 'User not exists' });
+        }
         const passKey = passCode.rows[0];
         if (await bcryptjs.compare(password, passKey.passcode)) {
             const user: User = { id: passKey.id, email: username, role: passKey.role };
             const accessToken: string = jwt.sign(user, String(process.env.SECRET_TOKEN), { expiresIn: "12000s" });
             return ({ status: RES_STATUS.SUCCESS, user: { accessToken: accessToken } });
         }
-        else
+        else {
             return ({ status: RES_STATUS.NOT_AUTHORIZED, message: 'Invalid Password' });
+        }
     }
     catch (err) {
         throw err;
@@ -81,11 +87,13 @@ export const userLogin = async (username: string, password: string, numberParams
 */
 export function authenticateToken(req: IGetUserAuthInfoRequest, res: Response, next: NextFunction): Response<any, Record<string, any>> | undefined {
     const token: string | undefined = req.headers.authorization?.split(' ')[1];
-    if (!token)
+    if (!token) {
         return res.status(RES_STATUS.NOT_AUTHORIZED).json({ message: 'Requires Token or authentication' });
+    }
     jwt.verify(token, String(process.env.SECRET_TOKEN), (err: unknown, user: any) => {
-        if (err)
+        if (err) {
             return res.status(RES_STATUS.NOT_AUTHORIZED).json({ message: 'Invalid Token' });
+        }
         req.user = user;
         next();
     });
